@@ -1,15 +1,19 @@
 # icflights
 Ryanair airlines flight locator service based on Ryanair API.
 
-Features:
+#### Features:
   - Searches for the direct Ryanair airlines flights and interconnected flights with 1 stop for a given date/time interval and airports.
   - Maximum duration between time of departure and arrival is 768 hours (about a month).
 
-Documentation:
+#### Documentation:
+
 1. API specification https://aqueous-taiga-77873.herokuapp.com/swagger-ui.html
 
-2. High level architecture: 
-http://www.zamkovyi.name/files/ICFlights.png
+2. High level application design: 
+
+![alt text][design]
+
+[design]: http://www.zamkovyi.name/files/ICFlights.png "High level design"
 
 3. Deployable war file is available here: http://www.zamkovyi.name/files/icflights.war
 
