@@ -27,4 +27,4 @@ https://aqueous-taiga-77873.herokuapp.com/timetable/interconnections?departure={
     - Where: {depatrureAirport} and  {arrival} are the airports passed as IATA codes,
            {departureDateTime} and {arrivalDateTime} are the time interval in yyyy-MM-ddTHH:mm format.
     
-    - Example: https://aqueous-taiga-77873.herokuapp.com/timetable/interconnections?departure=WRO&arrival=DUB&departureDateTime=2017-02-10T07:00&arrivalDateTime=2017-02-12T22:00 
+    - Example: https://aqueous-taiga-77873.herokuapp.com/timetable/interconnections?departure=WRO&arrival=DUB&departureDateTime=2017-02-16T07:00&arrivalDateTime=2017-02-20T22:00 
