@@ -1,0 +1,24 @@
+# service port
+# server.port: 8081
+# ryanair route service location url
+route.service.url: 'https://api.ryanair.com/core/3/routes/'
+# routes update interval in secconds
+interconnection.service.cache.ttl: 3600
+# ryanair timetable service location url, should include from, to, year and month parameters
+timetable.service.url: 'https://api.ryanair.com/timetable/3/schedules/{from}/{to}/years/{year}/months/{month}/'
+# 'from' parameter name is timetable.service.url
+timetable.service.from.parameter.name: 'from'
+# 'to' parameter name is timetable.service.url
+timetable.service.to.parameter.name: 'to'
+# 'year' parameter name is timetable.service.url
+timetable.service.year.parameter.name: 'year'
+# 'month' parameter name is timetable.service.url
+timetable.service.month.parameter.name: 'month'
+# maximum duration for interconnection flight search in hours
+timetable.service.flight.max.delay: 768
+# minimun delay between interconnection flights in hours
+timetable.service.flight.min.delay: 2
+# maximum amount of parallel connections to ryanair timetable service
+timetable.service.max.connections: 8
+# timeout for waiting the results for direct and indirect flight search results
+timetable.service.wait.timeout: 100000
