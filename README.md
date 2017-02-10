@@ -15,11 +15,13 @@ Ryanair airlines flight locator service based on Ryanair API.
 
 [design]: http://www.zamkovyi.name/files/ICFlights.png "High level design"
 
-3. Deployable war file is available here: http://www.zamkovyi.name/files/icflights.war
+#### Demo and deployment:
 
-4. Demo is available here: https://aqueous-taiga-77873.herokuapp.com/
+1. Deployable war file is available here: http://www.zamkovyi.name/files/icflights.war
 
-5. In order to search for a flight use the following endpoint 
+2. Demo is available here: https://aqueous-taiga-77873.herokuapp.com/
+
+3. In order to search for a flight use the following endpoint 
 https://aqueous-taiga-77873.herokuapp.com/timetable/interconnections?departure={departureAirport}&arrival={arrivalAirport}&departureDateTime={departureDateTime}&arrivalDateTime={arrivalDateTime}
     
     - Where: {depatrureAirport} and  {arrival} are the airports passed as IATA codes,
