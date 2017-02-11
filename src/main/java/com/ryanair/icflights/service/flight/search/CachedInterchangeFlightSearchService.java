@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
@@ -35,6 +37,18 @@ public final class CachedInterchangeFlightSearchService implements FlightSearchS
     @Qualifier("direct")
     private FlightSearchService directFlightSearchService;
 
+    private ExecutorService executorService;
+
+    @PostConstruct
+    public void startExecutor() {
+        this.executorService = Executors.newCachedThreadPool();
+    }
+
+    @PreDestroy
+    public void stopExecutor() {
+        this.executorService.shutdownNow();
+    }
+
     @Cacheable(CacheConfig.CACHE_NAME)
     @Override
     public List<Flight> getFlights(
@@ -48,75 +62,76 @@ public final class CachedInterchangeFlightSearchService implements FlightSearchS
         resultFutureArray.add(
                 CompletableFuture.supplyAsync(() ->
                         directFlightSearchService
-                            .getFlights(from, to, departureTime, arrivalTime)
-                )
-                .thenApply(flights::addAll)
+                                .getFlights(from, to, departureTime, arrivalTime)
+                        , executorService)
+                        .thenApplyAsync(flights::addAll, executorService)
         );
         final Set<Pair<PairOfStrings, PairOfStrings>> interconnections
                 = interconnectionService.getInterconnections(from, to);
         interconnections.forEach(
                 interconnection ->
-                    resultFutureArray.add(
-                        CompletableFuture.supplyAsync(
-                                () -> directFlightSearchService
-                                            .getFlights(
-                                                    interconnection.getA().getA(),
-                                                    interconnection.getA().getB(),
-                                                    departureTime,
-                                                    arrivalTime
-                                            )
-                                    )
-                                    .thenApply(
-                                            legOneFlights -> {
-                                                legOneFlights.forEach(
-                                                        flight -> {
-                                                            //we have either one or no legs from direct service
-                                                            final FlightLeg legOne = flight.getLegs().iterator().next();
-                                                            final LocalDateTime legTwoStartingTime =
-                                                                    legOne.getArrivalDateTime().plusHours(
-                                                                            serviceConfig.getFlightMinDelay()
-                                                                    );
-                                                            if (legTwoStartingTime.compareTo(arrivalTime) <= 0) {
-                                                                List<Flight> legTwoFlights = directFlightSearchService
-                                                                        .getFlights(
-                                                                                interconnection.getB().getA(),
-                                                                                interconnection.getB().getB(),
-                                                                                legTwoStartingTime,
-                                                                                arrivalTime
-                                                                        );
-                                                                legTwoFlights.forEach(
-                                                                        flightLegTwo -> {
-                                                                            final FlightLeg legTwo = flightLegTwo.getLegs().iterator().next();
-                                                                            final List<FlightLeg> legList =
-                                                                            Arrays.asList(
-                                                                                            new FlightLeg(
-                                                                                                    interconnection.getA().getA(),
-                                                                                                    interconnection.getA().getB(),
-                                                                                                    legOne.getDepartureDateTime(),
-                                                                                                    legOne.getArrivalDateTime()
-                                                                                            ),
-                                                                                            new FlightLeg(
-                                                                                                    interconnection.getB().getA(),
-                                                                                                    interconnection.getB().getB(),
-                                                                                                    legTwo.getDepartureDateTime(),
-                                                                                                    legTwo.getArrivalDateTime()
-                                                                                            )
-                                                                            );
-                                                                            flights.add(
-                                                                                    new Flight(
-                                                                                            1,
-                                                                                            legList
-                                                                                    )
-                                                                            );
-                                                                        }
+                        resultFutureArray.add(
+                                CompletableFuture.supplyAsync(
+                                        () -> directFlightSearchService
+                                                .getFlights(
+                                                        interconnection.getA().getA(),
+                                                        interconnection.getA().getB(),
+                                                        departureTime,
+                                                        arrivalTime
+                                                ),
+                                executorService
+                                ).thenApplyAsync(
+                                        legOneFlights -> {
+                                            legOneFlights.forEach(
+                                                    flight -> {
+                                                        //we have either one or no legs from direct service
+                                                        final FlightLeg legOne = flight.getLegs().iterator().next();
+                                                        final LocalDateTime legTwoStartingTime =
+                                                                legOne.getArrivalDateTime().plusHours(
+                                                                        serviceConfig.getFlightMinDelay()
                                                                 );
-                                                            }
+                                                        if (legTwoStartingTime.compareTo(arrivalTime) <= 0) {
+                                                            List<Flight> legTwoFlights = directFlightSearchService
+                                                                    .getFlights(
+                                                                            interconnection.getB().getA(),
+                                                                            interconnection.getB().getB(),
+                                                                            legTwoStartingTime,
+                                                                            arrivalTime
+                                                                    );
+                                                            legTwoFlights.forEach(
+                                                                    flightLegTwo -> {
+                                                                        final FlightLeg legTwo = flightLegTwo.getLegs().iterator().next();
+                                                                        final List<FlightLeg> legList =
+                                                                                Arrays.asList(
+                                                                                        new FlightLeg(
+                                                                                                interconnection.getA().getA(),
+                                                                                                interconnection.getA().getB(),
+                                                                                                legOne.getDepartureDateTime(),
+                                                                                                legOne.getArrivalDateTime()
+                                                                                        ),
+                                                                                        new FlightLeg(
+                                                                                                interconnection.getB().getA(),
+                                                                                                interconnection.getB().getB(),
+                                                                                                legTwo.getDepartureDateTime(),
+                                                                                                legTwo.getArrivalDateTime()
+                                                                                        )
+                                                                                );
+                                                                        flights.add(
+                                                                                new Flight(
+                                                                                        1,
+                                                                                        legList
+                                                                                )
+                                                                        );
+                                                                    }
+                                                            );
                                                         }
-                                                );
-                                                return true;
-                                            }
-                                    )
-                    )
+                                                    }
+                                            );
+                                            return true;
+                                        },
+                                        executorService
+                                )
+                        )
         );
         try {
             CompletableFuture.allOf(
