@@ -19,7 +19,7 @@ Ryanair airlines flight locator service based on Ryanair API.
 
 1. Deployable war file is available here: http://www.zamkovyi.name/files/icflights.war
 
-2. Demo is available here: https://aqueous-taiga-77873.herokuapp.com/
+2. Demo is available here: https://aqueous-taiga-77873.herokuapp.com/swagger-ui.html
 
 3. In order to search for a flight use the following endpoint 
 https://aqueous-taiga-77873.herokuapp.com/timetable/interconnections?departure={departureAirport}&arrival={arrivalAirport}&departureDateTime={departureDateTime}&arrivalDateTime={arrivalDateTime}
